@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scpath-research"
+version = "0.1.0"
+description = "Pathway-informed single-cell harmonization research implementation"
+requires-python = ">=3.9"
+readme = "README.md"
+
+[tool.setuptools.packages.find]
+include = ["scpath", "scpath.*"]

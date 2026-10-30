@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+.Rhistory
+.RData
+output/
+logs/
+*.pt
+*.pth
+*.h5ad
+*.npz
+*.lock
+*.token
+release_packages/
+publishing_auth/
+tools/

@@ -1,0 +1,27 @@
+# Source-workstation versions; install an appropriate CUDA PyTorch build first.
+# Full archival analyses can require additional Python/R software.
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.1.4
+scikit-learn==1.6.1
+scanpy==1.10.3
+anndata==0.10.9
+decoupler==1.9.0
+scikit-misc==0.3.1
+torch==2.5.1
+torch-geometric==2.6.1
+POT==0.9.5
+networkx==3.2.1
+numba==0.60.0
+pynndescent==0.5.13
+faiss-cpu==1.8.0
+tqdm==4.67.1
+seaborn==0.13.2
+matplotlib==3.9.4
+tensorboardX==2.6.2.2
+easydl==2.2.0
+scikit-image==0.24.0
+umap-learn==0.5.9.post2
+ipykernel==6.29.5
+nbformat==5.10.4
+ipython==8.18.1

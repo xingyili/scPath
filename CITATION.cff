@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: >-
+  Please cite the scPath manuscript and the versioned Zenodo software/data
+  record when using this work. Access approval does not grant reuse rights.
+title: "scPath: Pathway-informed harmonization of single-cell atlases"
+type: software
+authors:
+  - family-names: Wei
+    given-names: Xinrong
+  - family-names: Li
+    given-names: Xingyi
+  - family-names: Liu
+    given-names: Huan
+  - family-names: Yan
+    given-names: Yishuo
+  - family-names: Du
+    given-names: Gaoyuan
+  - family-names: Wei
+    given-names: Feng
+  - family-names: Shang
+    given-names: Xuequn
+abstract: >-
+  A pathway-informed framework for harmonizing single-cell RNA-seq datasets
+  across technical and biological contexts.
+license: other
