@@ -34,7 +34,7 @@ def qc_filter(adata, path_output, name, species, plot=False, save_data=False):
         adata = adata[adata.obs['n_genes_by_counts'] < max_genes, :]
         adata = adata[adata.obs['n_genes_by_counts'] > min_genes, :]
         adata = adata[adata.obs['pct_counts_mt'] < max_mt, :]
-    sc.pp.filter_genes(adata, min_cells=10)
+    sc.pp.filter_genes(adata, min_cells=4)
     print(f'Cell count after filtering: {adata.n_obs}')
     print(f'Gene count after filtering: {adata.n_vars}')
     if save_data:

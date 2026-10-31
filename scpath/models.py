@@ -157,7 +157,8 @@ class DynamicGate(nn.Module):
         self.out_dim = out_dim
         self.num_classes = num_classes
         self.class_embed_dim = 16
-        self.gate_net = nn.Sequential(nn.Linear(feat_dim + self.class_embed_dim, 64), nn.GELU(), nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, out_dim))
+        self.gru = nn.GRU(feat_dim + self.class_embed_dim, 64, batch_first=True)
+        self.gate_net = nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, out_dim), nn.Softmax(dim=-1))
         self.class_embed = nn.Embedding(num_classes, self.class_embed_dim)
 
     def forward(self, features, class_labels=None, class_weights=None):
@@ -174,8 +175,9 @@ class DynamicGate(nn.Module):
             class_emb = class_emb * weight_vector.view(-1, 1)
         features_with_class = torch.cat([features, class_emb], dim=1)
         if features_with_class.size(0) > 0:
-            logits = self.gate_net(features_with_class)
-            return F.softmax(logits, dim=-1)
+            features_with_class = features_with_class.unsqueeze(1)
+            _, hidden = self.gru(features_with_class)
+            return self.gate_net(hidden.squeeze(0))
         else:
             return torch.zeros((0, self.out_dim), device=features.device)
 

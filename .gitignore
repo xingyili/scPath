@@ -13,5 +13,6 @@ logs/
 *.lock
 *.token
 release_packages/
+data/experiments/
 publishing_auth/
 tools/

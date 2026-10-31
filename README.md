@@ -5,13 +5,15 @@ datasets across technical and biological contexts. The implementation combines
 expression and pathway-derived cell graphs, graph neural networks, unbalanced
 optimal transport, and confidence-aware student distillation.
 
-This repository contains the translated core implementation and one small
-CEL-Seq2-to-10x Chromium V2 example. The model and training calculations are
-carried over from the original `MPNN_SelfDistill` source; only comments,
-docstrings, user-facing Chinese text, and package import paths were changed.
-The five manuscript studies are preserved separately as original research
-archives in the restricted Zenodo record. Their saved outputs are historical
-artifacts, not results regenerated for this software release.
+This repository contains the translated core implementation, a small runnable
+CEL-Seq2-to-10x Chromium V2 example, and one core training notebook for each
+of the five manuscript studies. The original `MPNN_SelfDistill` source and
+this package use the historical GRU gate and batch-wise class-weighted
+classification loss. Executable model logic matches the source after
+package-import and English text adaptations. The study notebooks retain the
+source training parameters and the applicable metric calculations;
+figure-generation cells are omitted. Their data are distributed separately
+as five restricted Zenodo archives, not in GitHub.
 
 ## Install
 
@@ -51,11 +53,34 @@ data preparation calls. The notebook reports measured metrics from the local
 example run; they are example-specific and are not a guarantee of the scores
 in the manuscript's 72-pair benchmark.
 
-The recorded RTX 4090 run produced 93.35% accuracy / 0.7654 macro-F1 for OT
-common labels and 95.13% accuracy / 0.7469 macro-F1 after distillation. The
-final accuracy improved, while macro-F1 was lower than the OT-common score;
-both metrics are retained so the example is not presented using accuracy
-alone. The executed notebook contains the associated output.
+The recorded RTX 4090 run with the restored GRU/class-weight configuration
+produced 94.77% accuracy / 0.9011 macro-F1 for OT common labels and 94.96%
+accuracy / 0.9133 macro-F1 after distillation. The executed notebook contains
+the associated output. These are example-specific metrics, not the five-study
+reproduction scores.
+
+## Run a manuscript experiment
+
+Obtain access to the matching restricted Zenodo data archive. Extract it into
+`data/experiments/` at the repository root, for example:
+
+```bash
+mkdir -p data/experiments
+tar --zstd -xf cross_disease_pancreas.tar.zst -C data/experiments
+```
+
+Open `experiments/cross_disease_pancreas/core_experiment.ipynb` with the
+`scPath` kernel and execute its cells in order. The same layout applies to
+the four other experiments. Set `PYTHONHASHSEED=42` before launching Jupyter
+and optionally `SCPATH_DEVICE=cuda:0` to select a visible GPU. New graphs,
+checkpoints, and predictions are written under `output/experiments/`; the
+historical files in the archive are read-only comparison artifacts. The
+experiment notebooks preserve the source training scale, so some runs need
+substantial GPU time and memory. See [data provenance](docs/DATA_AND_PROVENANCE.md)
+for archive names and experiment-specific inputs.
+These notebooks reproduce the core model run and its primary prediction
+summary; they do not regenerate every downstream biological analysis table
+retained as historical data in Zenodo.
 
 ## Repository contents
 
@@ -63,13 +88,15 @@ alone. The executed notebook contains the associated output.
 | --- | --- |
 | `scpath/` | Core source modules and required utilities |
 | `examples/cel_seq2/` | Runnable example notebook and data preparation script |
+| `experiments/` | Five source-aligned core study notebooks |
 | `data/RNA/cel_seq2/` | Prepared small reference/query example |
 | `data/pathway/` | Human and mouse Reactome/KEGG pathway GMT files |
-| `docs/` | Environment, provenance, validation, and access notes |
+| `docs/` | Environment, data provenance, source parity, and access notes |
 
 The repository does not include the five studies' RNA matrices, clinical
-PDAC data, intermediate files, or checkpoints. Those selected originals are
-organized by experiment in the associated restricted Zenodo deposit; see
+PDAC data, intermediate files, or checkpoints. Selected original inputs and
+historical data outputs are organized by experiment in the associated
+restricted Zenodo deposit; see
 [the data and provenance note](docs/DATA_AND_PROVENANCE.md).
 
 ## Access and rights
@@ -83,6 +110,5 @@ modify, or reuse the files. See [access and publishing notes](docs/PUBLISHING.md
 
 ## Citation
 
-Please cite the scPath manuscript, “Pathway-informed harmonization of
-single-cell atlases across biological contexts,” and cite the Zenodo record
-after its DOI is available. See [CITATION.cff](CITATION.cff).
+Please cite the scPath manuscript and the versioned restricted Zenodo data
+record. See [CITATION.cff](CITATION.cff) and the access notes.

@@ -124,7 +124,11 @@ def train_joint_with_da(adata_train, adata_test, knn_graphs, label_mapping, conf
             assert classifier.training, 'Classifier must be in training mode'
             assert (cls_labels >= 0).all() and (cls_labels < num_classes).all(), 'Label out of range!'
             batch_labels = cls_labels[source_ids]
-            loss_cls = F.cross_entropy(source_outputs['cls_output'], batch_labels)
+            class_counts = torch.bincount(batch_labels, minlength=num_classes).float()
+            class_weights = 1.0 / (class_counts + 1e-6)
+            class_weights = class_weights / class_weights.sum()
+            weights_factor = torch.clamp(class_weights * num_classes * config.class_weight_factor, min=0.1, max=10.0)
+            loss_cls = F.cross_entropy(source_outputs['cls_output'], batch_labels, weight=weights_factor)
             norm_feat_t = target_outputs['norm_feat']
             after_cluhead_t = target_outputs['after_cluhead']
             minibatch_size = norm_feat_t.size(0)
