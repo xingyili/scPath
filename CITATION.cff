@@ -1,7 +1,6 @@
 cff-version: 1.2.0
 message: >-
-  Please cite the scPath manuscript and the versioned restricted Zenodo data
-  record when using this work. Access approval does not grant reuse rights.
+  Please cite the scPath manuscript and its data record (DOI: 10.5281/zenodo.23851863) when using this work.
 title: "scPath: Pathway-informed harmonization of single-cell atlases"
 type: software
 authors:

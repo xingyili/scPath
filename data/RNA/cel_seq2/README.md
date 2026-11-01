@@ -8,6 +8,6 @@ This directory contains the prepared PBMC reference/query pair used by the
 - Each split contains `matrix.mtx`, `features.tsv`, `barcodes.tsv`, and
   `metadata.csv`.
 
-The files were copied from the original prepared benchmark pair. They are
-included for the private project example only; upstream source terms still
-apply. The corresponding source pair was checked for byte-identical files.
+The files were copied from the original prepared benchmark pair for this
+runnable example. Upstream source terms still apply. The corresponding source
+pair was checked for byte-identical files.
