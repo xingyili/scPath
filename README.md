@@ -1,72 +1,92 @@
-# scPath
+# scPath: Pathway-informed harmonization of single-cell atlases across biological contexts
 
-scPath is a pathway-informed framework for harmonizing single-cell RNA-seq datasets across technical and biological contexts. The implementation combines expression and pathway-derived cell graphs, graph neural networks, unbalanced optimal transport, and confidence-aware student distillation.
+![scPath workflow: from reference and query cells through pathway-informed graph construction, fusion, alignment, and distillation to harmonized cell annotations](docs/scpath_workflow.png)
 
-This repository contains the core implementation, a small runnable CEL-Seq2-to-10x Chromium V2 example, and one core training notebook for each of the five manuscript studies. The study notebooks retain the source training parameters and the applicable metric calculations. Their data are distributed separately as five [Zenodo archives](https://doi.org/10.5281/zenodo.23851863).
+*scPath workflow.*
 
-## Install
+## Overview
 
-Use Python 3.9. Install a PyTorch build matching the CUDA driver and the corresponding PyTorch Geometric dependencies first. Then install the remaining requirements and this package:
+scPath aligns single-cell RNA-seq atlases while preserving differences that matter biologically, including cell identities and states that vary across conditions. It combines gene-expression and pathway-activity representations, uses unbalanced optimal transport to align shared populations without forcing atlas-specific cells to match, and refines uncertain cell-type assignments through knowledge distillation. The result is a harmonized cell representation with transferred annotations that can be used to investigate pathway programs across platforms, tissues, disease, aging, and treatment.
+
+This repository provides the scPath implementation, a CEL-Seq2-to-10x Chromium V2 example with its prepared input data, and one core notebook for each of the five manuscript studies. The larger study datasets are provided separately as five archives in the [Zenodo data record](https://doi.org/10.5281/zenodo.23851863).
+
+## Quick start
+
+The example trains a model, so you need a CUDA-capable NVIDIA GPU, a compatible driver, [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html), and access to this private GitHub repository. Run the commands from a terminal on the GPU machine.
+
+### 1. Download the code
+
+```bash
+git clone https://github.com/xingyili/scPath.git
+cd scPath
+```
+
+GitHub will require authentication from an account that has been granted access to the repository. The example input files and human pathway GMT files are already included; no Zenodo download is needed for this quick start.
+
+### 2. Create the environment
 
 ```bash
 conda create -n scPath python=3.9 pip -y
 conda activate scPath
-# Install a CUDA-compatible PyTorch build and matching PyG packages first.
+```
+
+Install the CUDA build of PyTorch 2.5.1 that matches your system, then the remaining dependencies. The command below uses **CUDA 11.8**, matching the local environment used to check this repository; use the corresponding command in the [PyTorch 2.5.1 installation guide](https://pytorch.org/get-started/previous-versions/) for CUDA 12.1 or 12.4. See the [environment notes](docs/ENVIRONMENT.md) for PyTorch Geometric compatibility and other requirements.
+
+```bash
+python -m pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu118
 python -m pip install -r requirements.txt
 python -m pip install -e .
+python -m pip install jupyterlab
 python -m ipykernel install --user --name scPath --display-name "Python (scPath)"
+python -c "import torch; print('PyTorch:', torch.__version__, 'CUDA available:', torch.cuda.is_available())"
 ```
 
-Check that the selected environment sees the intended GPU:
+`CUDA available` must print `True` before you run the notebook. Installing a CPU-only PyTorch build will not run this training example.
+
+### 3. Run the included example
+
+Start Jupyter from the repository root so the notebook can locate the bundled data:
 
 ```bash
-python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+PYTHONHASHSEED=42 jupyter lab examples/cel_seq2/demo.ipynb
 ```
 
-The example is a training workload and requires a CUDA GPU with enough memory for the selected reference/query pair. See [environment notes](docs/ENVIRONMENT.md).
+Select the **Python (scPath)** kernel and run the cells in order. The notebook prepares the reference and query data, builds the human Reactome and KEGG graphs, trains scPath, and prints accuracy and macro-F1 for the resulting predictions. On a remote GPU server, open the Jupyter URL or connect your editor to that server's Jupyter session.
 
-## Run the example
+After it finishes, inspect `output/cel_seq2/metrics.csv` and `output/cel_seq2/logs/test_results_distilled.h5ad`. Generated files stay under `output/`; the included inputs in `data/RNA/cel_seq2/` are not overwritten. Training time and metrics depend on the GPU and run conditions.
 
-Open `examples/cel_seq2/demo.ipynb` with the `scPath` kernel and run its cells in order. The included `data/RNA/cel_seq2/` directory contains the prepared reference and query files. The example uses the original human Reactome and KEGG GMT files in `data/pathway/human/` and writes generated graphs and model outputs under `output/cel_seq2/`.
+## Reproduce a manuscript study
 
-The companion `examples/cel_seq2/process_data.py` contains the corresponding data preparation calls. The notebook reports measured metrics from the local example run.
-
-## Run a manuscript experiment
-
-Download the matching archive from the [public Zenodo data record](https://zenodo.org/records/23851863). Extract it into `data/experiments/` at the repository root, for example:
-
-```bash
-mkdir -p data/experiments
-tar --zstd -xf cross_disease_pancreas.tar.zst -C data/experiments
-```
-
-Open `experiments/cross_disease_pancreas/core_experiment.ipynb` with the `scPath` kernel and execute its cells in order. The other study notebooks use their matching archives; PBMC requires the additional preparation step below. Set `PYTHONHASHSEED=42` before launching Jupyter and optionally `SCPATH_DEVICE=cuda:0` to select a visible GPU. New graphs, checkpoints, and predictions are written under `output/experiments/`. The experiment notebooks preserve the source training scale, so some runs need substantial GPU time and memory. See [data provenance](docs/DATA_AND_PROVENANCE.md) for archive names and experiment-specific inputs.
-
-The PBMC archive stores each platform input once. To run the pair used by
-`experiments/cross_platform_pbmc/core_experiment.ipynb`:
+The five study notebooks require substantially more GPU memory and time than the quick-start example. Download the relevant `.tar.zst` archive from the [Zenodo data record](https://zenodo.org/records/23851863), then extract it under `data/experiments/`. For example, for the cross-disease pancreas study:
 
 ```bash
 mkdir -p data/experiments
-tar --zstd -xf cross_platform_pbmc.tar.zst -C data/experiments
+tar --zstd -xf /path/to/cross_disease_pancreas.tar.zst -C data/experiments
+PYTHONHASHSEED=42 jupyter lab experiments/cross_disease_pancreas/core_experiment.ipynb
+```
+
+Replace `/path/to/` with the location of the downloaded archive. Select the **Python (scPath)** kernel and run the notebook in order. Each of the other four notebooks has a matching archive; [data and provenance](docs/DATA_AND_PROVENANCE.md) lists the archive names and contents. The notebooks write new graphs, checkpoints, and predictions under `output/experiments/`. Set `SCPATH_DEVICE=cuda:0` before starting Jupyter if you need to select a particular visible GPU.
+
+The PBMC archive stores each sequencing platform's input once. Before running its notebook, reconstruct the selected pair's `train/` and `test/` directories:
+
+```bash
+tar --zstd -xf /path/to/cross_platform_pbmc.tar.zst -C data/experiments
 python scripts/materialize_pbmc_pairs.py --pair 10x_Chromium_V2_A_to_10x_Chromium_V3
+PYTHONHASHSEED=42 jupyter lab experiments/cross_platform_pbmc/core_experiment.ipynb
 ```
 
-The script recreates the notebook's `train/` and `test/` input directories. Use `--all` only when all 72 pairs are needed.
+Use `--all` instead of `--pair ...` only when you need all 72 directed PBMC pairs.
 
-## Repository contents
+## Repository layout
 
-| Path | Contents |
+| Path | What it contains |
 | --- | --- |
-| `scpath/` | Core source modules and required utilities |
-| `examples/cel_seq2/` | Runnable example notebook and data preparation script |
-| `experiments/` | Five source-aligned core study notebooks |
-| `scripts/materialize_pbmc_pairs.py` | Rebuild PBMC pair directories from deduplicated inputs |
-| `data/RNA/cel_seq2/` | Prepared small reference/query example |
-| `data/pathway/` | Human and mouse Reactome/KEGG pathway GMT files |
-| `docs/` | Environment and data provenance |
+| `scpath/` | Model, training, evaluation, and data-processing code |
+| `examples/cel_seq2/` | Runnable small-data notebook and its preparation function |
+| `data/RNA/cel_seq2/` | Prepared example reference and query inputs |
+| `data/pathway/` | Human and mouse Reactome/KEGG GMT files |
+| `experiments/` | One core notebook per manuscript study |
+| `scripts/materialize_pbmc_pairs.py` | Reconstructs a PBMC train/query pair from the archived platform inputs |
+| `docs/` | Environment, data provenance, and the workflow image |
 
-The repository does not include the five studies' RNA matrices, clinical PDAC data, intermediate files, or checkpoints. Selected study inputs and outputs are organized by experiment in the [Zenodo data record](https://zenodo.org/records/23851863); see [the data and provenance note](docs/DATA_AND_PROVENANCE.md).
-
-## Citation
-
-Please cite the scPath manuscript and the versioned Zenodo data record. See [CITATION.cff](CITATION.cff).
+The full study RNA matrices and clinical PDAC inputs are not stored in this GitHub repository. See the [Zenodo data record](https://zenodo.org/records/23851863) for the study archives and [CITATION.cff](CITATION.cff) for citation information.
